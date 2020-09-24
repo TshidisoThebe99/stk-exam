@@ -20,7 +20,7 @@ library(magick)
 ### STEP 1: Prep the Data
 
 # Read in the data
-churn <- read.csv('telcoData.csv')
+#churn <- read.csv('telcoData.csv')
 
 # Split data into train and test set
 intrain <- createDataPartition(churn$Churn,p=0.7,list=FALSE)
@@ -187,30 +187,13 @@ wc3 <- head(wc3,5)
 
 df4 <- data.frame('predictor4' = c('Contract', 'PaperlessBilling','InternetService','PaymentMethod','tenure_group'),
                   'values4' = c(310,280, 200,195,190))
-#Error occurs here
-image1 <- magick::image_read('error_message.png')
-image_ggplot <- function(image, interpolate = FALSE) {
-  info <- image_info(image)
-  ggplot2::ggplot(data.frame(x = 0, y = 0), ggplot2::aes_string('x', 'y')) +
-    ggplot2::geom_blank() +
-    ggplot2::theme_void() +
-    ggplot2::scale_y_reverse() +
-    ggplot2::coord_fixed(expand = FALSE, xlim = c(0, info$width), ylim = c(0, info$height)) +
-    ggplot2::annotation_raster(image, 0, info$width, -info$height, 0, interpolate = interpolate) +
-    NULL
-}
-# Error occurs here
-tryCatch({
+
 df5 <- data.frame(df5$importance)
 predictor5 <- row.names(df5)
 values5 <- df5$No
 xy5 <- data.frame(predictor5, values5)
 wc5 <- arrange(xy5, desc(values5))
-wc5 <- head(wc5,5) #wc5 cut down to first 5 obs?
-}, error = function(ex) {
-  return(NA)
-  }
-)
+wc5 <- head(wc5,5)
 
 df6 <- data.frame('Variable' = c('Contract','Tenure Group', 'Internet Service', 'Monthly Charge', 'Payment Method', 'Total Charges', 'Paperless Billing', 'Online Security'),
                   'Count' = c(5,4,3,3,3,2,2,1))
@@ -222,8 +205,7 @@ model_choices <- c('Logistic Regression',
                   'Decision Tree',
                   'Random Forest',
                   'Naive Bayes',
-                  'K-Nearest Neighbor',
-                  'All')
+                  'K-Nearest Neighbor')
 
 colors <- c('blue',
             'orange',
@@ -336,15 +318,6 @@ server = function(input, output){
              cex.axis = 1.25)
         abline(a=0, b=1)
         legend(.6, .4, auc5, title = "AUC", cex = 1.5)
-      }
-    else if (input$model == 'All'){
-      plot(roc,main = "All Model's performances",col = colors[1],lwd=2,lty=1)
-      plot(roc2, add = T, col = colors[2], lwd=2,lty=2)
-      plot(roc3,add = T, col = colors[3], lwd=2,lty=3)
-      plot(roc4,add = T, col = colors[4], lwd=2,lty=4)
-      plot(roc5,add = T, col = colors[5], lwd=2,lty=5)
-      abline(a=0, b=1)
-      legend(.6,0.4,title = "AUC",legend = c(paste("Logistic:",auc),paste("Decision Tree:",auc2),paste("RandomForrest:",auc3),paste("Naives Bayes:",auc4),paste("KNN:",auc5)),bg= 'lightblue',fill = colors)
     }
   })
   
@@ -463,24 +436,16 @@ server = function(input, output){
         labs(title = 'Naive Bayes Variable Importance', fill = 'Predictor')
     } 
       else if (input$model == 'K-Nearest Neighbor') {
-          tryCatch({
-            ggplot(wc5, aes(x = predictor5, y = values5)) +
-              geom_col(aes(fill = predictor5)) +
-              geom_text(aes(label=round(values5,0)), vjust = 2, size = 6.5, color = 'white', fontface = 'bold') +
-              theme(axis.title = element_blank(),
-                    title = element_text(size = 20, face = 'bold'),
-                    plot.title = element_text(hjust = 0.5),
-                    axis.text = element_text(size = 14),
-                    legend.text = element_text(size = 14)) +
-              labs(title = 'K-Nearest Neighbor Variable Importance', fill = 'Predictor')
-          },
-            error = function(e){
-                image_ggplot(image1)
-                }
-            
-          )
-      } 
-    
+        ggplot(wc5, aes(x = predictor5, y = values5)) +
+          geom_col(aes(fill = predictor5)) +
+          geom_text(aes(label=round(values5,0)), vjust = 2, size = 6.5, color = 'white', fontface = 'bold') +
+          theme(axis.title = element_blank(),
+                title = element_text(size = 20, face = 'bold'),
+                plot.title = element_text(hjust = 0.5),
+                axis.text = element_text(size = 14),
+                legend.text = element_text(size = 14)) +
+          labs(title = 'K-Nearest Neighbor Variable Importance', fill = 'Predictor')
+    } 
   })
 
 }
